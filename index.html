@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thrivemap</title>
+<meta name="description" content="Thrivemap ranks 193 countries by the UN Human Development Index, with an interactive world map.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 64 64&quot; role=&quot;img&quot; aria-label=&quot;Thrivemap logo&quot;%3E %3Cdefs%3E%3CclipPath id=&quot;g&quot;%3E%3Ccircle cx=&quot;32&quot; cy=&quot;32&quot; r=&quot;22&quot;/%3E%3C/clipPath%3E%3C/defs%3E %3Crect width=&quot;64&quot; height=&quot;64&quot; rx=&quot;14&quot; fill=&quot;%230468b1&quot;/%3E %3Ccircle cx=&quot;32&quot; cy=&quot;32&quot; r=&quot;22&quot; fill=&quot;%2303558f&quot;/%3E %3Cg clip-path=&quot;url%28%23g%29&quot;%3E %3Crect x=&quot;10&quot; y=&quot;40&quot; width=&quot;9.5&quot; height=&quot;20&quot; fill=&quot;%23ff8f73&quot;/%3E %3Crect x=&quot;21.5&quot; y=&quot;31&quot; width=&quot;9.5&quot; height=&quot;29&quot; fill=&quot;%23ffc65c&quot;/%3E %3Crect x=&quot;33&quot; y=&quot;21&quot; width=&quot;9.5&quot; height=&quot;39&quot; fill=&quot;%238fd8ff&quot;/%3E %3Crect x=&quot;44.5&quot; y=&quot;8&quot; width=&quot;9.5&quot; height=&quot;52&quot; fill=&quot;%23ffffff&quot;/%3E %3C/g%3E %3Ccircle cx=&quot;32&quot; cy=&quot;32&quot; r=&quot;22&quot; fill=&quot;none&quot; stroke=&quot;%23ffffff&quot; stroke-opacity=&quot;.55&quot; stroke-width=&quot;2&quot;/%3E %3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0c141c);--ink:light-dark(#0b1a2a,#e6edf3);--mute:light-dark(#566577,#97a7b7);--line:light-dark(#e1e7ed,#1f2c38);--panel:light-dark(#f2f6f9,#111c27);--un:light-dark(#0468b1,#063f6e);--unk:light-dark(#03558f,#05345b);--t-vh:light-dark(#0a4d97,#7fb8ff);--t-h:light-dark(#2b9be0,#3ccbf4);--t-m:light-dark(#d98a12,#ffbf4d);--t-l:light-dark(#cf4229,#ff7b5e);--focus:light-dark(#0468b1,#7fb8ff);--sea:light-dark(#e8f2fa,#0f1d2a);--nod:light-dark(#cfd7df,#2c3a48)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Roboto,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Roboto Condensed",Roboto,sans-serif;font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:0}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto}
+.band{padding:clamp(24px,3.5vw,48px) max(5vw,16px)}
+.hero{background:var(--un);color:#fff;padding-bottom:12px}
+.brand{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font:700 24px/1 "Roboto Condensed",sans-serif;letter-spacing:-.01em;margin-bottom:22px}
+.brand .mark{flex:none;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.hero h1{font-size:clamp(32px,4.6vw,50px);text-wrap:balance;max-width:16ch}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 40px;align-items:end}
+.lede{margin:12px 0 0;max-width:58ch;color:#e3f1fc;font-size:17px}
+.tiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.chip{background:var(--unk);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;min-height:44px;color:#fff;min-width:96px}
+.chip:hover{border-color:rgba(255,255,255,.6)}
+.chip[aria-pressed=true]{background:#fff;color:#0b1a2a}
+.chip b{display:block;font:700 28px/1 "Roboto Condensed",sans-serif}
+.chip span{font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.chip i{width:10px;height:10px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.25)}
+.fig{position:relative;height:230px;margin-top:22px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.fig circle{cursor:pointer}
+.fig text{font:13px Roboto,sans-serif;fill:#dcecf9}
+.fig .lab{font-weight:700;fill:#fff;font-size:14px;paint-order:stroke;stroke:var(--un);stroke-width:5px}
+.main{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);grid-template-areas:"ctl side" "list side";gap:18px 36px;align-items:start}
+.ctl{grid-area:ctl;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ctl input,.ctl select{height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 12px;font-size:16px}
+.ctl input{flex:1 1 200px}
+.ctl select{flex:0 1 auto;cursor:pointer}
+.btn{height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--mute)}
+.count{flex-basis:100%;color:var(--mute);font-size:14px;margin:0}
+aside{grid-area:side;position:sticky;top:16px;display:grid;gap:18px}
+.list{grid-area:list;border-top:2px solid var(--ink)}
+.row{display:grid;grid-template-columns:3.2em minmax(0,11em) minmax(0,1fr) 3.4em;gap:12px;align-items:center;width:100%;padding:9px 6px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;cursor:pointer}
+.row:hover{background:var(--panel)}
+.row.on{background:color-mix(in srgb,var(--t-vh) 12%,var(--bg));box-shadow:inset 3px 0 0 var(--ink)}
+.rk{font:700 18px/1 "Roboto Condensed",sans-serif;font-variant-numeric:tabular-nums;color:var(--mute)}
+.nm{font-weight:500;line-height:1.25}
+.nm small{display:block;color:var(--mute);font-size:13px;font-weight:400}
+.track{height:12px;background:var(--panel);border-radius:2px;overflow:hidden}
+.track div{height:100%;border-radius:2px}
+.val{font-variant-numeric:tabular-nums;text-align:right;font-weight:700;white-space:nowrap}
+.empty{padding:28px 6px;color:var(--mute)}
+.card{background:var(--panel);border-radius:12px;padding:22px}
+.det h2{font-size:clamp(28px,3vw,38px)}
+.meta{color:var(--mute);font-size:14px;margin:6px 0 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:99px;background:var(--bg);color:var(--ink);font-size:13px;font-weight:500}
+.pill i{width:9px;height:9px;border-radius:50%}
+.big{display:flex;gap:28px;align-items:baseline;margin:18px 0 14px;flex-wrap:wrap}
+.big b{font:700 clamp(44px,5vw,60px)/1 "Roboto Condensed",sans-serif;font-variant-numeric:tabular-nums}
+.big span{font-size:15px;color:var(--mute)}
+.big span strong{display:block;font:700 28px/1.1 "Roboto Condensed",sans-serif;color:var(--ink)}
+.facts{margin:0;display:grid;gap:0}
+.facts div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.facts dt{color:var(--mute)}.facts dd{margin:0;font-weight:500;text-align:right;white-space:nowrap}
+.det h3,.reg h3{font-size:18px;margin:18px 0 6px}
+.reg h3{margin-top:0}
+.nb{display:grid;gap:2px}
+.nb button{display:grid;grid-template-columns:2.6em 1fr auto;gap:8px;border:0;background:none;text-align:left;padding:6px 4px;border-radius:6px;cursor:pointer;font-size:15px;min-height:36px}
+.nb button:hover{background:var(--bg)}
+.nb .me{font-weight:700}
+.nb em{font-style:normal;color:var(--mute);font-variant-numeric:tabular-nums}
+.rbar{display:grid;grid-template-columns:5.6em minmax(0,1fr) 3.2em;gap:10px;align-items:center;width:100%;border:0;background:none;padding:7px 0;cursor:pointer;text-align:left;font-size:15px}
+.rbar .track{height:14px;background:var(--bg)}
+.rbar .track div{background:var(--mute)}
+.rbar.on .track div{background:var(--t-vh)}
+.rbar.on{font-weight:700}
+.rbar small{display:block;color:var(--mute);font-size:13px;font-weight:400}
+.mapband{padding-bottom:0}
+.maphead{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;margin-bottom:12px}
+.maphead h2{font-size:clamp(26px,2.8vw,34px);margin-right:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mute)}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend i{width:12px;height:12px;border-radius:3px}
+.zoom{display:flex;gap:6px}
+.zb{width:44px;padding:0;font-size:20px;line-height:1}
+.mapbox{position:relative;aspect-ratio:1000/436;width:100%;background:var(--sea);border-radius:12px;overflow:hidden}
+#map{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+#map.drag{cursor:grabbing}
+.c{stroke:var(--sea);stroke-width:.6px;vector-effect:non-scaling-stroke;cursor:pointer}
+.c:hover{filter:brightness(1.15)}
+.c.vh{fill:var(--t-vh)}.c.h{fill:var(--t-h)}.c.m{fill:var(--t-m)}.c.l{fill:var(--t-l)}.c.nd{fill:var(--nod);cursor:default}
+.c.dim{opacity:.2}
+.dot{stroke:var(--sea);stroke-width:1.2px}
+#msel path,#msel circle{fill:none;stroke:var(--ink);stroke-width:2.4px;vector-effect:non-scaling-stroke;pointer-events:none}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 10px;border-radius:6px;font-size:14px;line-height:1.35;white-space:nowrap;transform:translate(-50%,calc(-100% - 14px));z-index:2}
+.tip b{display:block}
+.mapmsg{position:absolute;inset:0;display:grid;place-items:center;margin:0;color:var(--mute)}
+.hint{color:var(--mute);font-size:14px;margin:10px 0 0}
+.src{color:var(--mute);font-size:14px;border-top:1px solid var(--line);margin-top:28px;padding-top:16px}
+.src a{color:inherit}
+@media(max-width:900px){.main{grid-template-columns:minmax(0,1fr);grid-template-areas:"ctl" "det" "list" "reg"}aside{display:contents}.det{grid-area:det}.reg{grid-area:reg}.top{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.mapbox{aspect-ratio:auto;height:240px}.tiers{grid-template-columns:repeat(2,minmax(0,1fr))}.fig{height:190px}.row{grid-template-columns:2.6em minmax(0,1fr) 3.2em;grid-template-rows:auto auto;gap:4px 10px}.row .track{grid-column:2/4;grid-row:2;height:8px}.card{padding:18px}}
+@media(prefers-reduced-motion:no-preference){.track div{transition:width .5s ease}}
+</style>
+</head>
+<body>
+<header class="hero band">
+  <div class="wrap">
+    <a class="brand" href="#"><svg class="mark" width="44" height="44" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <defs><clipPath id="lg"><circle cx="32" cy="32" r="22"/></clipPath></defs>
+  <rect width="64" height="64" rx="14" fill="#0468b1"/>
+  <circle cx="32" cy="32" r="22" fill="#03558f"/>
+  <g clip-path="url(#lg)">
+    <rect x="10" y="40" width="9.5" height="20" fill="#ff8f73"/>
+    <rect x="21.5" y="31" width="9.5" height="29" fill="#ffc65c"/>
+    <rect x="33" y="21" width="9.5" height="39" fill="#8fd8ff"/>
+    <rect x="44.5" y="8" width="9.5" height="52" fill="#ffffff"/>
+  </g>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="2"/>
+</svg><span>Thrivemap</span></a>
+    <div class="top">
+      <div>
+        <h1>Human development, country by country</h1>
+        <p class="lede">Iceland leads 193 countries with an HDI of 0.972; South Sudan is last at 0.388. Click a tier, a dot, a country on the map or a row to explore.</p>
+      </div>
+      <div class="tiers" id="tiers" aria-label="Filter by development tier"></div>
+    </div>
+    <div class="fig" id="figbox"><svg id="strip" role="img" aria-label="Every country plotted on the HDI scale from 0.35 to 1.0"></svg></div>
+  </div>
+</header>
+
+<section class="band mapband" aria-label="World map">
+  <div class="wrap">
+    <div class="maphead">
+      <h2>On the map</h2>
+      <div class="legend" id="legend"></div>
+      <div class="zoom">
+        <button class="btn zb" id="zin" type="button" aria-label="Zoom in">+</button>
+        <button class="btn zb" id="zout" type="button" aria-label="Zoom out">−</button>
+        <button class="btn" id="zfit" type="button">Whole world</button>
+      </div>
+    </div>
+    <div class="mapbox" id="mapbox">
+      <svg id="map" viewBox="0 0 1000 436" preserveAspectRatio="xMidYMid meet" role="img" aria-label="World map coloured by HDI tier"><g id="mg"></g><g id="msel"></g></svg>
+      <div class="tip" id="tip" hidden></div>
+      <p class="mapmsg" id="mapmsg">Loading map…</p>
+    </div>
+    <p class="hint">Click a country for its details. Drag to move, pinch or Ctrl + scroll to zoom, double-click to zoom in. Very small states appear as dots.</p>
+  </div>
+</section>
+
+<main class="band">
+  <div class="wrap main">
+    <div class="ctl">
+      <input id="q" type="search" placeholder="Search a country" aria-label="Search a country" autocomplete="off">
+      <select id="reg" aria-label="Region"><option value="all">All regions</option></select>
+      <select id="sort" aria-label="Sort order">
+        <option value="rank">Highest first</option>
+        <option value="low">Lowest first</option>
+        <option value="name">A to Z</option>
+      </select>
+      <button class="btn" id="copy" type="button">Copy list</button>
+      <button class="btn" id="reset" type="button">Reset</button>
+      <p class="count" id="count" aria-live="polite"></p>
+    </div>
+    <div class="list" id="list"></div>
+    <aside>
+      <section class="card det" id="det" aria-live="polite"></section>
+      <section class="card reg" id="regions"><h3>Average HDI by region</h3><div id="rbars"></div></section>
+    </aside>
+  </div>
+  <p class="wrap src">Source: <a href="https://hdr.undp.org/data-center/human-development-index">UNDP Human Development Report 2025</a>, HDI values for 2023 (latest edition). The HDI combines life expectancy, years of schooling and income per person on a 0 to 1 scale. UNDP tiers: very high 0.800 and above, high 0.700 to 0.799, medium 0.550 to 0.699, low below 0.550. Regions are continental groupings added for this page. Map borders from Natural Earth (world-atlas); territories without an HDI value are grey.</p>
+</main>
+
+<script>
+{
+const RAW=`1|Iceland|.972|E
+2|Norway|.970|E
+2|Switzerland|.970|E
+4|Denmark|.962|E
+5|Germany|.959|E
+5|Sweden|.959|E
+7|Australia|.958|O
+8|Hong Kong|.955|A
+8|Netherlands|.955|E
+10|Belgium|.951|E
+11|Ireland|.949|E
+12|Finland|.948|E
+13|Singapore|.946|A
+13|United Kingdom|.946|E
+15|United Arab Emirates|.940|A
+16|Canada|.939|M
+17|Liechtenstein|.938|E
+17|New Zealand|.938|O
+17|United States|.938|M
+20|South Korea|.937|A
+21|Slovenia|.931|E
+22|Austria|.930|E
+23|Japan|.925|A
+24|Malta|.924|E
+25|Luxembourg|.922|E
+26|France|.920|E
+27|Israel|.919|A
+28|Spain|.918|E
+29|Czechia|.915|E
+29|Italy|.915|E
+29|San Marino|.915|E
+32|Andorra|.913|E
+32|Cyprus|.913|E
+34|Greece|.908|E
+35|Poland|.906|E
+36|Estonia|.905|E
+37|Saudi Arabia|.900|A
+38|Bahrain|.899|A
+39|Lithuania|.895|E
+40|Portugal|.890|E
+41|Croatia|.889|E
+41|Latvia|.889|E
+43|Qatar|.886|A
+44|Slovakia|.880|E
+45|Chile|.878|M
+46|Hungary|.870|E
+47|Argentina|.865|M
+48|Montenegro|.862|E
+48|Uruguay|.862|M
+50|Oman|.858|A
+51|Turkey|.853|A
+52|Kuwait|.852|A
+53|Antigua and Barbuda|.851|M
+54|Seychelles|.848|F
+55|Bulgaria|.845|E
+55|Romania|.845|E
+57|Georgia|.844|A
+58|Saint Kitts and Nevis|.840|M
+59|Panama|.839|M
+60|Brunei|.837|A
+60|Kazakhstan|.837|A
+62|Costa Rica|.833|M
+62|Serbia|.833|E
+64|Russia|.832|E
+65|Belarus|.824|E
+66|Bahamas|.820|M
+67|Malaysia|.819|A
+68|North Macedonia|.815|E
+69|Armenia|.811|A
+69|Barbados|.811|M
+71|Albania|.810|E
+72|Trinidad and Tobago|.807|M
+73|Mauritius|.806|F
+74|Bosnia and Herzegovina|.804|E
+75|Iran|.799|A
+76|Saint Vincent and the Grenadines|.798|M
+76|Thailand|.798|A
+78|China|.797|A
+79|Peru|.794|M
+80|Grenada|.791|M
+81|Azerbaijan|.789|A
+81|Mexico|.789|M
+83|Colombia|.788|M
+84|Brazil|.786|M
+84|Palau|.786|O
+86|Moldova|.785|E
+87|Ukraine|.779|E
+88|Ecuador|.777|M
+89|Dominican Republic|.776|M
+89|Guyana|.776|M
+89|Sri Lanka|.776|A
+92|Tonga|.769|O
+93|Maldives|.766|A
+93|Vietnam|.766|A
+95|Turkmenistan|.764|A
+96|Algeria|.763|F
+97|Cuba|.762|M
+98|Dominica|.761|M
+99|Paraguay|.756|M
+100|Egypt|.754|F
+100|Jordan|.754|A
+102|Lebanon|.752|A
+103|Saint Lucia|.748|M
+104|Mongolia|.747|A
+105|Tunisia|.746|F
+106|South Africa|.741|F
+107|Uzbekistan|.740|A
+108|Bolivia|.733|M
+108|Gabon|.733|F
+108|Marshall Islands|.733|O
+111|Botswana|.731|F
+111|Fiji|.731|O
+113|Indonesia|.728|A
+114|Suriname|.722|M
+115|Belize|.721|M
+115|Libya|.721|F
+117|Jamaica|.720|M
+117|Kyrgyzstan|.720|A
+117|Philippines|.720|A
+120|Morocco|.710|F
+121|Venezuela|.709|M
+122|Samoa|.708|O
+123|Nicaragua|.706|M
+124|Nauru|.703|O
+125|Bhutan|.698|A
+126|Eswatini|.695|F
+126|Iraq|.695|A
+128|Tajikistan|.691|A
+129|Tuvalu|.689|O
+130|Bangladesh|.685|A
+130|India|.685|A
+132|El Salvador|.678|M
+133|Equatorial Guinea|.674|F
+133|Palestine|.674|A
+135|Cape Verde|.668|F
+136|Namibia|.665|F
+137|Guatemala|.662|M
+138|Republic of the Congo|.649|F
+139|Honduras|.645|M
+140|Kiribati|.644|O
+141|São Tomé and Príncipe|.637|F
+142|Timor-Leste|.634|A
+143|Ghana|.628|F
+143|Kenya|.628|F
+145|Nepal|.622|A
+146|Vanuatu|.621|O
+147|Laos|.617|A
+148|Angola|.616|F
+149|Micronesia|.615|O
+150|Myanmar|.609|A
+151|Cambodia|.606|A
+152|Comoros|.603|F
+153|Zimbabwe|.598|F
+154|Zambia|.595|F
+155|Cameroon|.588|F
+156|Solomon Islands|.584|O
+157|Ivory Coast|.582|F
+157|Uganda|.582|F
+159|Rwanda|.578|F
+160|Papua New Guinea|.576|O
+161|Togo|.571|F
+162|Syria|.564|A
+163|Mauritania|.563|F
+164|Nigeria|.560|F
+165|Tanzania|.555|F
+166|Haiti|.554|M
+167|Lesotho|.550|F
+168|Pakistan|.544|A
+169|Senegal|.530|F
+170|Gambia|.524|F
+171|DR Congo|.522|F
+172|Malawi|.517|F
+173|Benin|.515|F
+174|Guinea-Bissau|.514|F
+175|Djibouti|.513|F
+176|Sudan|.511|F
+177|Liberia|.510|F
+178|Eritrea|.503|F
+179|Guinea|.500|F
+180|Ethiopia|.497|F
+181|Afghanistan|.496|A
+182|Mozambique|.493|F
+183|Madagascar|.487|F
+184|Yemen|.470|A
+185|Sierra Leone|.467|F
+186|Burkina Faso|.459|F
+187|Burundi|.439|F
+188|Mali|.419|F
+188|Niger|.419|F
+190|Chad|.416|F
+191|Central African Republic|.414|F
+192|Somalia|.404|F
+193|South Sudan|.388|F`;
+
+const RG={E:'Europe',A:'Asia',F:'Africa',M:'Americas',O:'Oceania'};
+const TIERS=[{k:'vh',n:'Very high',min:.8,band:'#ffffff'},{k:'h',n:'High',min:.7,band:'#8fd8ff'},{k:'m',n:'Medium',min:.55,band:'#ffc65c'},{k:'l',n:'Low',min:0,band:'#ff8f73'}];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const f3=v=>v.toFixed(3);
+const D=RAW.trim().split('\n').map((l,i)=>{const p=l.split('|');const v=+p[2];return{i,rank:+p[0],name:p[1],v,reg:RG[p[3]],tier:TIERS.find(t=>v>=t.min)}});
+const N=D.length;
+const REGS=Object.values(RG).map(n=>{const m=D.filter(d=>d.reg===n);return{n,c:m.length,avg:m.reduce((a,d)=>a+d.v,0)/m.length}}).sort((a,b)=>b.avg-a.avg);
+D.forEach(d=>{const same=D.filter(x=>x.reg===d.reg);d.rr=1+same.filter(x=>x.v>d.v).length;d.rc=same.length;d.pct=Math.round(D.filter(x=>x.v<d.v).length/(N-1)*100)});
+
+const $=id=>document.getElementById(id);
+const KEY='hdi-rank-v1';
+const DEF={sel:'Iceland',tier:'all',reg:'all',sort:'rank',q:''};
+let st={...DEF};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)st={...DEF,...s}}catch(e){}
+if(!D.some(d=>d.name===st.sel))st.sel=DEF.sel;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+
+$('reg').innerHTML+=REGS.slice().sort((a,b)=>a.n.localeCompare(b.n)).map(r=>`<option value="${esc(r.n)}">${esc(r.n)}</option>`).join('');
+
+const visible=()=>{const q=st.q.trim().toLowerCase();let a=D.filter(d=>(st.tier==='all'||d.tier.k===st.tier)&&(st.reg==='all'||d.reg===st.reg)&&(!q||d.name.toLowerCase().includes(q)));if(st.sort==='low')a=a.slice().reverse();if(st.sort==='name')a=a.slice().sort((x,y)=>x.name.localeCompare(y.name));return a};
+const sel=()=>D.find(d=>d.name===st.sel);
+
+const renderTiers=()=>{$('tiers').innerHTML=TIERS.map(t=>`<button class="chip" type="button" data-t="${t.k}" aria-pressed="${st.tier===t.k}"><b>${D.filter(d=>d.tier.k===t.k).length}</b><span><i style="background:${t.band}"></i>${t.n}</span></button>`).join('')};
+
+const renderList=a=>{
+  $('count').textContent=a.length===N?`All ${N} countries and territories`:`Showing ${a.length} of ${N} countries`;
+  $('list').innerHTML=a.length?a.map(d=>`<button class="row${d.name===st.sel?' on':''}" type="button" data-i="${d.i}"><span class="rk">${d.rank}</span><span class="nm">${esc(d.name)}<small>${esc(d.reg)}</small></span><span class="track"><div style="width:${(d.v*100).toFixed(1)}%;background:var(--t-${d.tier.k})"></div></span><span class="val">${f3(d.v)}</span></button>`).join(''):`<div class="empty">No country matches these filters. <button class="btn" type="button" id="clear">Clear filters</button></div>`;
+};
+
+const renderDet=()=>{
+  const d=sel(),top=D[0],r=REGS.find(x=>x.n===d.reg);
+  const nb=D.slice(Math.max(0,d.i-2),Math.min(N,d.i+3));
+  const diff=d.v-r.avg;
+  $('det').innerHTML=`<h2>${esc(d.name)}</h2>
+  <p class="meta">${esc(d.reg)} <span class="pill"><i style="background:var(--t-${d.tier.k})"></i>${d.tier.n} development</span></p>
+  <div class="big"><b>${f3(d.v)}</b><span><strong>#${d.rank}</strong>of ${N}</span></div>
+  <dl class="facts">
+    <div><dt>Scores higher than</dt><dd>${d.pct}% of countries</dd></div>
+    <div><dt>Gap to #1 (${esc(top.name)})</dt><dd>${d.i===0?'Leader':'−'+f3(top.v-d.v)}</dd></div>
+    <div><dt>Rank in ${esc(d.reg)}</dt><dd>${d.rr} of ${d.rc}</dd></div>
+    <div><dt>${esc(d.reg)} average</dt><dd>${f3(r.avg)} (${diff>=0?'+':'−'}${f3(Math.abs(diff))})</dd></div>
+  </dl>
+  <h3>Nearest in the ranking</h3>
+  <div class="nb">${nb.map(x=>`<button type="button" data-i="${x.i}" class="${x===d?'me':''}"><em>${x.rank}</em><span>${esc(x.name)}</span><em>${f3(x.v)}</em></button>`).join('')}</div>`;
+};
+
+const renderRegs=()=>{const d=sel();$('rbars').innerHTML=REGS.map(r=>`<button class="rbar${r.n===d.reg?' on':''}" type="button" data-r="${esc(r.n)}" aria-pressed="${st.reg===r.n}"><span>${esc(r.n)}<small>${r.c} countries</small></span><span class="track"><div style="width:${(r.avg*100).toFixed(1)}%"></div></span><span class="val">${f3(r.avg)}</span></button>`).join('')};
+
+const s=$('strip');
+const draw=()=>{
+  const W=s.clientWidth,H=s.clientHeight;if(!W||!H)return;
+  const ml=10,mr=10,mt=26,mb=28,lo=.35,hi=1;
+  const x=v=>ml+(v-lo)/(hi-lo)*(W-ml-mr);
+  const r=W<520?3.2:4.6,bw=2*r+.6;
+  const vis=new Set(visible().map(d=>d.i));const filtered=vis.size<N;
+  const cnt={};D.forEach(d=>{const b=Math.round(x(d.v)/bw);d._b=b;d._k=cnt[b]=(cnt[b]||0)+1});
+  const max=Math.max(...Object.values(cnt));
+  const step=Math.min(2*r+.6,(H-mt-mb-2*r)/Math.max(1,max-1));
+  const base=H-mb-r;
+  const cy=d=>base-(d._k-1)*step;
+  const cx=d=>d._b*bw;
+  let g='';
+  [.55,.7,.8].forEach(t=>{g+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt-6}" y2="${H-mb+4}" stroke="rgba(255,255,255,.35)" stroke-dasharray="3 4"/>`});
+  [[lo,.55,'Low'],[.55,.7,'Medium'],[.7,.8,'High'],[.8,hi,'Very high']].forEach(z=>{g+=`<text x="${(x(z[0])+x(z[1]))/2}" y="${mt-12}" text-anchor="middle">${z[2]}</text>`});
+  g+=`<line x1="${ml}" x2="${W-mr}" y1="${H-mb+4}" y2="${H-mb+4}" stroke="rgba(255,255,255,.5)"/>`;
+  const ticks=W<520?[.4,.6,.8,1]:[.4,.5,.6,.7,.8,.9,1];
+  ticks.forEach(t=>{g+=`<text x="${x(t)}" y="${H-6}" text-anchor="${t===1?'end':'middle'}">${t.toFixed(1)}</text>`});
+  D.forEach(d=>{g+=`<circle data-i="${d.i}" cx="${cx(d)}" cy="${cy(d)}" r="${r}" fill="${d.tier.band}" opacity="${filtered&&!vis.has(d.i)?.22:1}"><title>${esc(d.name)}: ${f3(d.v)}</title></circle>`});
+  const d=sel();
+  if(d){const X=cx(d),Y=cy(d),ly=Math.max(14,Y-r-16),anchor=X>W*.7?'end':X<W*.3?'start':'middle';
+    g+=`<circle cx="${X}" cy="${Y}" r="${r+4}" fill="none" stroke="#fff" stroke-width="2.5" pointer-events="none"/><line x1="${X}" x2="${X}" y1="${Y-r-4}" y2="${ly+4}" stroke="#fff" pointer-events="none"/><text class="lab" x="${X}" y="${ly}" text-anchor="${anchor}">${esc(d.name)} ${f3(d.v)}</text>`}
+  s.innerHTML=g;
+};
+const ro=new ResizeObserver(draw);ro.observe(s);
+
+const svg=$('map'),mg=$('mg'),msel=$('msel'),tip=$('tip'),box=$('mapbox');
+const byName=new Map(D.map(d=>[d.name,d]));
+const M={f:null,full:{x:0,y:0,w:1000,h:436},vb:{x:0,y:0,w:1000,h:436},byH:new Map()};
+$('legend').innerHTML=TIERS.map(t=>`<span><i style="background:var(--t-${t.k})"></i>${t.n}</span>`).join('')+`<span><i style="background:var(--nod)"></i>No data</span>`;
+const scale=()=>Math.min(svg.clientWidth/M.vb.w,svg.clientHeight/M.vb.h)||1;
+const setVB=()=>{const F=M.full,v=M.vb;v.w=Math.max(F.w/14,Math.min(F.w,v.w));v.h=v.w*F.h/F.w;v.x=Math.max(0,Math.min(F.w-v.w,v.x));v.y=Math.max(0,Math.min(F.h-v.h,v.y));
+  svg.setAttribute('viewBox',`${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}`);
+  svg.style.touchAction=v.w<F.w-1?'none':'pan-y';
+  const k=scale();for(const c of mg.querySelectorAll('circle'))c.setAttribute('r',(4/k).toFixed(2));
+  const sc=msel.querySelector('circle');if(sc)sc.setAttribute('r',(8/k).toFixed(2))};
+const zoomAt=(px,py,f)=>{const v=M.vb,w=Math.max(M.full.w/14,Math.min(M.full.w,v.w/f)),r=w/v.w;v.x=px-(px-v.x)*r;v.y=py-(py-v.y)*r;v.w=w;setVB()};
+const toView=(cx,cy)=>{const m=svg.getScreenCTM();return m?new DOMPoint(cx,cy).matrixTransform(m.inverse()):{x:M.vb.x+M.vb.w/2,y:M.vb.y+M.vb.h/2}};
+const updateMap=()=>{if(!M.f)return;const vis=new Set(visible().map(d=>d.i)),filtered=vis.size<N;
+  for(const el of mg.children){const d=byName.get(M.f[+el.dataset.k].h);el.classList.toggle('dim',!!d&&filtered&&!vis.has(d.i))}
+  const f=M.byH.get(st.sel);msel.innerHTML=!f?'':f.d&&f.a>=3?`<path d="${esc(f.d)}"/>`:`<circle cx="${f.c[0]}" cy="${f.c[1]}" r="${(8/scale()).toFixed(2)}"/>`};
+const showTip=(el,cx,cy)=>{const f=el&&el.dataset.k!=null?M.f[+el.dataset.k]:null;if(!f){tip.hidden=true;return}
+  const d=byName.get(f.h),r=box.getBoundingClientRect();
+  tip.innerHTML=d?`<b>${esc(d.name)}</b>Rank ${d.rank}, HDI ${f3(d.v)}`:`<b>${esc(f.n)}</b>No HDI data`;
+  tip.hidden=false;tip.style.left=Math.max(70,Math.min(r.width-70,cx-r.left))+'px';tip.style.top=Math.max(52,cy-r.top)+'px'};
+fetch('map.json').then(r=>{if(!r.ok)throw new Error('map');return r.json()}).then(m=>{
+  M.f=m.f;M.full={x:0,y:0,w:m.w,h:m.h};M.vb={...M.full};m.f.forEach(f=>{if(f.h)M.byH.set(f.h,f)});
+  let g='';m.f.forEach((f,k)=>{const d=byName.get(f.h);if(f.d)g+=`<path class="c ${d?d.tier.k:'nd'}" data-k="${k}" d="${esc(f.d)}"/>`});
+  m.f.forEach((f,k)=>{const d=byName.get(f.h);if(d&&f.a<3)g+=`<circle class="c dot ${d.tier.k}" data-k="${k}" cx="${f.c[0]}" cy="${f.c[1]}" r="2"/>`});
+  mg.innerHTML=g;$('mapmsg').remove();setVB();updateMap();
+}).catch(()=>{$('mapmsg').textContent='The map could not be loaded.'});
+const mro=new ResizeObserver(()=>{if(M.f)setVB()});mro.observe(svg);
+const P=new Map();let drag=null,pinch=null;
+svg.addEventListener('pointerdown',e=>{if(!M.f)return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(P.size===1)drag={sx:e.clientX,sy:e.clientY,vb:{...M.vb},moved:false};
+  if(P.size===2){const [a,b]=[...P.values()];pinch={d0:Math.hypot(a.x-b.x,a.y-b.y)||1,vb0:{...M.vb},m:toView((a.x+b.x)/2,(a.y+b.y)/2)};if(drag)drag.moved=true}
+  if(e.pointerType!=='touch'||M.vb.w<M.full.w-1){try{svg.setPointerCapture(e.pointerId)}catch(err){}}});
+svg.addEventListener('pointermove',e=>{
+  if(!P.has(e.pointerId)){if(e.pointerType==='mouse')showTip(e.target.closest('[data-k]'),e.clientX,e.clientY);return}
+  P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a.x-b.x,a.y-b.y),v0=pinch.vb0,w=Math.max(M.full.w/14,Math.min(M.full.w,v0.w*pinch.d0/d)),r=w/v0.w;
+    M.vb={x:pinch.m.x-(pinch.m.x-v0.x)*r,y:pinch.m.y-(pinch.m.y-v0.y)*r,w,h:0};setVB();tip.hidden=true;return}
+  if(drag&&P.size===1){const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>5)drag.moved=true;
+    if(drag.moved&&(e.pointerType!=='touch'||M.vb.w<M.full.w-1)){const k=scale();M.vb.x=drag.vb.x-dx/k;M.vb.y=drag.vb.y-dy/k;setVB();svg.classList.add('drag');tip.hidden=true}}});
+const endPtr=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);if(P.size<2)pinch=null;
+  if(P.size===0){svg.classList.remove('drag');
+    if(drag&&!drag.moved&&e.type==='pointerup'){const el=document.elementFromPoint(e.clientX,e.clientY),t=el&&el.closest&&el.closest('#mg [data-k]');
+      if(t){const d=byName.get(M.f[+t.dataset.k].h);if(d)pick(d.i,false);showTip(t,e.clientX,e.clientY)}else tip.hidden=true}
+    drag=null}};
+svg.addEventListener('pointerup',endPtr);svg.addEventListener('pointercancel',endPtr);
+svg.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&!P.size)tip.hidden=true});
+svg.addEventListener('dblclick',e=>{if(!M.f)return;e.preventDefault();const p=toView(e.clientX,e.clientY);zoomAt(p.x,p.y,2)});
+svg.addEventListener('wheel',e=>{if(!M.f||!(e.ctrlKey||e.metaKey))return;e.preventDefault();const p=toView(e.clientX,e.clientY);zoomAt(p.x,p.y,Math.exp(-e.deltaY*.01))},{passive:false});
+const zc=f=>{if(!M.f)return;zoomAt(M.vb.x+M.vb.w/2,M.vb.y+M.vb.h/2,f);tip.hidden=true};
+$('zin').addEventListener('click',()=>zc(1.6));$('zout').addEventListener('click',()=>zc(1/1.6));
+$('zfit').addEventListener('click',()=>{if(!M.f)return;M.vb={...M.full};setVB();tip.hidden=true});
+
+const render=()=>{const a=visible();renderTiers();renderList(a);renderDet();renderRegs();draw();updateMap();save()};
+const pick=(i,scroll)=>{st.sel=D[i].name;render();if(scroll&&innerWidth<=900)$('det').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
+
+$('q').value=st.q;$('reg').value=st.reg;$('sort').value=st.sort;
+$('q').addEventListener('input',e=>{st.q=e.target.value;const a=visible();if(a.length&&st.q.trim()&&!a.some(d=>d.name===st.sel))st.sel=a[0].name;render()});
+$('reg').addEventListener('change',e=>{st.reg=e.target.value;render()});
+$('sort').addEventListener('change',e=>{st.sort=e.target.value;render()});
+$('tiers').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;st.tier=st.tier===b.dataset.t?'all':b.dataset.t;render()});
+$('list').addEventListener('click',e=>{if(e.target.id==='clear'){st={...DEF,sel:st.sel};$('q').value='';$('reg').value='all';render();return}const b=e.target.closest('[data-i]');if(b)pick(+b.dataset.i,true)});
+$('det').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(b)pick(+b.dataset.i,false)});
+$('rbars').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;st.reg=st.reg===b.dataset.r?'all':b.dataset.r;$('reg').value=st.reg;render()});
+s.addEventListener('click',e=>{const c=e.target.closest('circle[data-i]');if(c)pick(+c.dataset.i,true)});
+$('reset').addEventListener('click',()=>{st={...DEF};$('q').value='';$('reg').value='all';$('sort').value='rank';render()});
+$('copy').addEventListener('click',()=>{const b=$('copy');const txt='Rank\tCountry\tRegion\tHDI 2023\n'+visible().map(d=>`${d.rank}\t${d.name}\t${d.reg}\t${f3(d.v)}`).join('\n');
+  const done=m=>{b.textContent=m;setTimeout(()=>b.textContent='Copy list',1600)};
+  try{navigator.clipboard.writeText(txt).then(()=>done('Copied'),()=>done('Copy blocked'))}catch(e){done('Copy blocked')}});
+
+render();
+}
+</script>
+</body>
+</html>
